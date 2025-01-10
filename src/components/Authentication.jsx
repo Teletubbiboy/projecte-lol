@@ -4,7 +4,6 @@ import {
   TextField,
   Button,
   Typography,
-  Grid,
   Alert,
 } from "@mui/material";
 import {
@@ -16,6 +15,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom"; // Importa useNavigate para redirecciones
 
 const Authentication = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -28,6 +28,7 @@ const Authentication = () => {
   const auth = getAuth();
   const db = getFirestore();
   const googleProvider = new GoogleAuthProvider();
+  const navigate = useNavigate(); // Instancia de useNavigate
 
   const handleSubmit = async () => {
     setError(null);
@@ -40,14 +41,14 @@ const Authentication = () => {
         );
         const user = userCredential.user;
 
-        // Desa el rol de l'usuari
+        // Guarda el rol del usuario
         await setDoc(doc(db, "User", user.uid), {
           email: user.email,
           role: isSeller ? "seller" : "user",
         });
 
         setUser(user);
-        setIsSeller(isSeller); // Actualitza l'estat segons l'opció triada durant el registre
+        setIsSeller(isSeller);
       } else {
         const userCredential = await signInWithEmailAndPassword(
           auth,
@@ -56,15 +57,18 @@ const Authentication = () => {
         );
         const user = userCredential.user;
 
-        // Obté el rol des de Firestore
+        // Obtiene el rol desde Firestore
         const userDoc = await getDoc(doc(db, "User", user.uid));
         if (userDoc.exists()) {
           const role = userDoc.data().role;
-          setIsSeller(role === "seller"); // Estableix isSeller si el rol és "seller"
+          setIsSeller(role === "seller");
         }
 
         setUser(user);
       }
+
+      // Redirige a la pantalla de inicio tras iniciar sesión
+      navigate("/");
     } catch (err) {
       setError(err.message);
     }
@@ -76,11 +80,11 @@ const Authentication = () => {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      // Desa el rol de l'usuari per defecte com "user"
+      // Guarda el rol del usuario por defecto como "user"
       const userDocRef = doc(db, "User", user.uid);
       await setDoc(userDocRef, { email: user.email, role: "user" }, { merge: true });
 
-      // Comprova el rol a Firestore
+      // Comprueba el rol en Firestore
       const userDoc = await getDoc(userDocRef);
       if (userDoc.exists()) {
         const role = userDoc.data().role;
@@ -88,6 +92,9 @@ const Authentication = () => {
       }
 
       setUser(user);
+
+      // Redirige a la pantalla de inicio tras iniciar sesión
+      navigate("/");
     } catch (err) {
       setError(err.message);
     }
@@ -96,7 +103,7 @@ const Authentication = () => {
   const handleSignOut = async () => {
     await signOut(auth);
     setUser(null);
-    setIsSeller(false); // Reinicia isSeller després del tancament de sessió
+    setIsSeller(false); // Reinicia isSeller después del cierre de sesión
   };
 
   return (
@@ -112,7 +119,7 @@ const Authentication = () => {
       {user ? (
         <Box>
           <Typography variant="h6">
-            Benvingut, {user.email} {isSeller && "(Venedor)"}
+            Bienvenido, {user.email} {isSeller && "(Vendedor)"}
           </Typography>
           <Button
             variant="contained"
@@ -120,13 +127,13 @@ const Authentication = () => {
             sx={{ marginTop: "20px" }}
             onClick={handleSignOut}
           >
-            Tancar Sessió
+            Cerrar Sesión
           </Button>
         </Box>
       ) : (
         <Box>
           <Typography variant="h5" gutterBottom>
-            {isSignUp ? "Registre" : "Inicia Sessió"}
+            {isSignUp ? "Registro" : "Inicia Sesión"}
           </Typography>
           {error && (
             <Alert severity="error" sx={{ marginBottom: "20px" }}>
@@ -134,7 +141,7 @@ const Authentication = () => {
             </Alert>
           )}
           <TextField
-            label="Correu Electrònic"
+            label="Correo Electrónico"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -142,7 +149,7 @@ const Authentication = () => {
             sx={{ marginBottom: "15px" }}
           />
           <TextField
-            label="Contrasenya"
+            label="Contraseña"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -157,7 +164,7 @@ const Authentication = () => {
                   checked={isSeller}
                   onChange={() => setIsSeller(!isSeller)}
                 />
-                Registrar-me com a venedor
+                Registrarme como vendedor
               </label>
             </Typography>
           )}
@@ -167,7 +174,7 @@ const Authentication = () => {
             fullWidth
             onClick={handleSubmit}
           >
-            {isSignUp ? "Registra't" : "Inicia Sessió"}
+            {isSignUp ? "Regístrate" : "Inicia Sesión"}
           </Button>
           <Button
             variant="outlined"
@@ -176,7 +183,7 @@ const Authentication = () => {
             sx={{ marginTop: "15px" }}
             onClick={handleGoogleSignIn}
           >
-            Inicia Sessió amb Google
+            Inicia Sesión con Google
           </Button>
           <Typography
             variant="body2"
@@ -184,8 +191,8 @@ const Authentication = () => {
             onClick={() => setIsSignUp(!isSignUp)}
           >
             {isSignUp
-              ? "Ja tens un compte? Inicia sessió."
-              : "No tens un compte? Registra't."}
+              ? "¿Ya tienes una cuenta? Inicia sesión."
+              : "¿No tienes una cuenta? Regístrate."}
           </Typography>
         </Box>
       )}
