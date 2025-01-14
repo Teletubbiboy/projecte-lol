@@ -21,7 +21,6 @@ const Authentication = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSeller, setIsSeller] = useState(false);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
 
@@ -41,14 +40,8 @@ const Authentication = () => {
         );
         const user = userCredential.user;
 
-        // Guarda el rol del usuario
-        await setDoc(doc(db, "User", user.uid), {
-          email: user.email,
-          role: isSeller ? "seller" : "user",
-        });
 
         setUser(user);
-        setIsSeller(isSeller);
       } else {
         const userCredential = await signInWithEmailAndPassword(
           auth,
@@ -57,14 +50,6 @@ const Authentication = () => {
         );
         const user = userCredential.user;
 
-        // Obtiene el rol desde Firestore
-        const userDoc = await getDoc(doc(db, "User", user.uid));
-        if (userDoc.exists()) {
-          const role = userDoc.data().role;
-          setIsSeller(role === "seller");
-        }
-
-        setUser(user);
       }
 
       // Redirige a la pantalla de inicio tras iniciar sesión
@@ -84,12 +69,6 @@ const Authentication = () => {
       const userDocRef = doc(db, "User", user.uid);
       await setDoc(userDocRef, { email: user.email, role: "user" }, { merge: true });
 
-      // Comprueba el rol en Firestore
-      const userDoc = await getDoc(userDocRef);
-      if (userDoc.exists()) {
-        const role = userDoc.data().role;
-        setIsSeller(role === "seller");
-      }
 
       setUser(user);
 
@@ -103,7 +82,6 @@ const Authentication = () => {
   const handleSignOut = async () => {
     await signOut(auth);
     setUser(null);
-    setIsSeller(false); // Reinicia isSeller después del cierre de sesión
   };
 
   return (
@@ -119,7 +97,7 @@ const Authentication = () => {
       {user ? (
         <Box>
           <Typography variant="h6">
-            Bienvenido, {user.email} {isSeller && "(Vendedor)"}
+            Bienvenido, {user.email}
           </Typography>
           <Button
             variant="contained"
@@ -156,18 +134,6 @@ const Authentication = () => {
             fullWidth
             sx={{ marginBottom: "20px" }}
           />
-          {isSignUp && (
-            <Typography variant="body2">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={isSeller}
-                  onChange={() => setIsSeller(!isSeller)}
-                />
-                Registrarme como vendedor
-              </label>
-            </Typography>
-          )}
           <Button
             variant="contained"
             color="primary"
