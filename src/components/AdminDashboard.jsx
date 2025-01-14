@@ -23,7 +23,7 @@ import {
   where,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-
+ 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
@@ -35,7 +35,7 @@ const AdminDashboard = () => {
   const [isSeller, setIsSeller] = useState(false);
   const db = getFirestore();
   const auth = getAuth();
-
+ 
   // Verifica si l'usuari és un venedor
   useEffect(() => {
     const checkSellerRole = async () => {
@@ -49,21 +49,21 @@ const AdminDashboard = () => {
         }
       }
     };
-
+ 
     checkSellerRole();
   }, [auth, db]);
-
+ 
   // Carrega els productes associats al venedor
   const fetchProducts = async () => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
-
+ 
     const sellerId = currentUser.uid;
     const productsQuery = query(
-      collection(db, "products"),
+      collection(db, "product"),
       where("sellerId", "==", sellerId)
     );
-
+ 
     const querySnapshot = await getDocs(productsQuery);
     const productsData = querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -71,14 +71,14 @@ const AdminDashboard = () => {
     }));
     setProducts(productsData);
   };
-
+ 
   // Afegeix un nou producte
   const handleAddProduct = async () => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
-
+ 
     try {
-      await addDoc(collection(db, "products"), {
+      await addDoc(collection(db, "product"), {
         ...newProduct,
         sellerId: currentUser.uid, // Associa el producte al venedor
       });
@@ -89,21 +89,21 @@ const AdminDashboard = () => {
       console.error("Error adding product:", error);
     }
   };
-
+ 
   // Elimina un producte
   const handleDeleteProduct = async (id) => {
     try {
-      await deleteDoc(doc(db, "products", id));
+      await deleteDoc(doc(db, "product", id));
       fetchProducts();
     } catch (error) {
       console.error("Error deleting product:", error);
     }
   };
-
+ 
   useEffect(() => {
     fetchProducts();
   }, [auth]);
-
+ 
   if (!isSeller) {
     return (
       <Box sx={{ textAlign: "center", padding: "50px" }}>
@@ -113,13 +113,13 @@ const AdminDashboard = () => {
       </Box>
     );
   }
-
+ 
   return (
     <Box sx={{ padding: "20px", maxWidth: "1200px", margin: "auto" }}>
       <Typography variant="h4" gutterBottom>
         Tauler de Productes
       </Typography>
-
+ 
       <Button
         variant="contained"
         color="primary"
@@ -128,7 +128,7 @@ const AdminDashboard = () => {
       >
         Afegir Producte
       </Button>
-
+ 
       <Grid container spacing={3}>
         {products.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product.id}>
@@ -149,7 +149,7 @@ const AdminDashboard = () => {
           </Grid>
         ))}
       </Grid>
-
+ 
       {/* Diàleg per afegir un producte */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Afegir Nou Producte</DialogTitle>
@@ -195,5 +195,5 @@ const AdminDashboard = () => {
     </Box>
   );
 };
-
+ 
 export default AdminDashboard;

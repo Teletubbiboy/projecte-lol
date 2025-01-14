@@ -8,7 +8,7 @@ const Banner = () => {
         position: "relative",
         width: "100%",
         height: "400px",
-        backgroundImage: `url('https://via.placeholder.com/1500x400')`,
+        backgroundImage: `url('banner.jpg')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         display: "flex",
