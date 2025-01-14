@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { fetchProducts } from "../services/productService";
+import { db } from "../firebaseConfig"; // Importa la configuración de Firestore
+import { collection, getDocs } from "firebase/firestore";
 import {
   Box,
   Grid,
@@ -10,50 +11,30 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
-import { loadStripe } from "@stripe/stripe-js";
-
-const stripePromise = loadStripe("pk_test_51QVa4xDFnebnL7tKQGRm3tZCXgWTnmtQl0lSWyTJKEQxoEsL3rfqLoUK8TZXLwJzk2KPyecCyZ5oU3CT9emYrXbl00SVKsbdoV");
 
 const ProductGrid = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadProducts = async () => {
-      const data = await fetchProducts();
-      setProducts(data);
-      setLoading(false);
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const querySnapshot = await getDocs(collection(db, "product")); // Cambia "product" por el nombre exacto de tu colección
+        const productsArray = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setProducts(productsArray);
+      } catch (error) {
+        console.error("Error obteniendo los productos:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-    loadProducts();
+
+    fetchProducts();
   }, []);
-
-  const handleBuyNow = async (product) => {
-    const stripe = await stripePromise;
-
-    try {
-      const response = await fetch("http://localhost:3001/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: [
-            {
-              name: product.name,
-              price: product.price,
-              quantity: 1, // Sempre compra una unitat
-            },
-          ],
-          success_url: `${window.location.origin}/success`,
-          cancel_url: `${window.location.origin}/cancel`,
-        }),
-      });
-
-      const { sessionId } = await response.json();
-      await stripe.redirectToCheckout({ sessionId });
-    } catch (error) {
-      console.error("Error al processar el pagament:", error);
-      alert("No s'ha pogut completar el pagament.");
-    }
-  };
 
   if (loading) {
     return (
@@ -79,10 +60,13 @@ const ProductGrid = () => {
               <CardMedia
                 component="img"
                 height="200"
-                image={product.imageURL}
+                image={product.imageURL} // Usar la propiedad correcta de Firestore
                 alt={product.name}
                 sx={{
-                  objectFit: "cover",
+                  objectFit: "contain", // Cambiar a "contain" para mostrar toda la imagen
+                  objectPosition: "center", // Centrar la imagen
+                  backgroundColor: "#f5f5f5", // Fondo gris claro para imágenes más pequeñas
+                  height: "300px", // Altura uniforme para todas las tarjetas
                 }}
               />
               <CardContent>
@@ -96,10 +80,9 @@ const ProductGrid = () => {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => handleBuyNow(product)}
                   sx={{ marginTop: "10px" }}
                 >
-                  Comprar ara
+                  Comprar ahora
                 </Button>
               </CardContent>
             </Card>

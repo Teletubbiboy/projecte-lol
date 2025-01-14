@@ -6,7 +6,6 @@ import {
   Button,
   Card,
   CardMedia,
-  CardContent,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { db } from "../firebaseConfig"; // Importa la configuración de Firestore
@@ -21,7 +20,7 @@ const ProductDetails = () => {
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, "products", id); // Cambia "products" por el nombre de tu colección
+        const docRef = doc(db, "product", id); // Cambia "product" por el nombre exacto de tu colección en Firestore
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -49,7 +48,7 @@ const ProductDetails = () => {
           height: "100vh",
         }}
       >
-        <Typography variant="h6">Carregant informació del producte...</Typography>
+        <Typography variant="h6">Cargando información del producto...</Typography>
       </Box>
     );
   }
@@ -64,7 +63,7 @@ const ProductDetails = () => {
           height: "100vh",
         }}
       >
-        <Typography variant="h6">No s'ha trobat el producte.</Typography>
+        <Typography variant="h6">No se encontró el producto.</Typography>
       </Box>
     );
   }
@@ -72,36 +71,36 @@ const ProductDetails = () => {
   return (
     <Box sx={{ padding: "20px", maxWidth: "1200px", margin: "auto" }}>
       <Grid container spacing={4}>
-        {/* Imatge del producte */}
+        {/* Imagen del producto */}
         <Grid item xs={12} md={6}>
           <Card>
             <CardMedia
               component="img"
-              image={product.image}
+              image={product.imageURL} // Usar la propiedad correcta de Firestore
               alt={product.name}
               sx={{ height: "400px", objectFit: "contain" }}
             />
           </Card>
         </Grid>
 
-        {/* Informació del producte */}
+        {/* Información del producto */}
         <Grid item xs={12} md={6}>
           <Box>
             <Typography variant="h4" gutterBottom>
               {product.name}
             </Typography>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              Preu: {product.price} €
+              Precio: €{product.price}
             </Typography>
             <Typography variant="body1" gutterBottom>
               {product.description}
             </Typography>
             <Box sx={{ marginTop: "20px", display: "flex", gap: "15px" }}>
               <Button variant="contained" color="primary">
-                Afegir al carretó
+                Añadir al carrito
               </Button>
               <Button variant="outlined" color="secondary">
-                Comprar ara
+                Comprar ahora
               </Button>
             </Box>
           </Box>
