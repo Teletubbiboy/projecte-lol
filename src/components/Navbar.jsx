@@ -1,62 +1,34 @@
-import React, { useEffect, useState } from "react";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  InputBase,
-  IconButton,
-  Badge,
-  Link,
-  Button,
-} from "@mui/material";
-import { Search, ShoppingCart } from "@mui/icons-material";
-import { getAuth, signOut } from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
- 
-const Navbar = () => {
-  const [isSeller, setIsSeller] = useState(false);
-  const [user, setUser] = useState(null);
+import React, { useState } from "react";
+import { AppBar, Toolbar, Typography, Button, Link, Menu, MenuItem } from "@mui/material";
+import { auth } from "../firebaseConfig";
+import { useNavigate } from "react-router-dom";
 
-  const auth = getAuth();
-  const db = getFirestore();
- 
-  // Comprueba si el usuario tiene rol de vendedor
-  useEffect(() => {
-    const checkAuth = async () => {
-      const currentUser = auth.currentUser;
-      setUser(currentUser);
- 
-      if (currentUser) {
-        try {
-          const userDoc = await getDoc(doc(db, "User", currentUser.uid));
-          if (userDoc.exists() && userDoc.data().role === "seller") {
-            setIsSeller(true);
-          } else {
-            setIsSeller(false);
-          }
-        } catch (error) {
-          console.error("Error accediendo al documento Firestore:", error);
-          setIsSeller(false);
-        }
-      }
-    };
- 
-    auth.onAuthStateChanged(() => {
-      checkAuth();
-    });
-  }, [auth, db]);
- 
-  // Cierra sesión
-  const handleSignOut = async () => {
-    await signOut(auth);
-    setUser(null);
-    setIsSeller(false);
+const Navbar = () => {
+  const navigate = useNavigate();
+  const user = auth.currentUser;
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
   };
- 
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    navigate("/authentication");
+  };
+
+  const handleProfile = () => {
+    navigate("/profile");
+    handleMenuClose();
+  };
+
   return (
-    <AppBar position="static" style={{ backgroundColor: "#232f3e" }}>
-      <Toolbar style={{ display: "flex", justifyContent: "space-between" }}>
-        {/* Logo */}
+    <AppBar position="static">
+      <Toolbar>
         <Typography variant="h6" style={{ fontWeight: "bold" }}>
           <Link
             href="/"
@@ -69,56 +41,26 @@ const Navbar = () => {
             Inicio
           </Link>
         </Typography>
- 
-        {/* Barra de búsqueda */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            backgroundColor: "#fff",
-            borderRadius: "5px",
-            padding: "0 10px",
-            width: "40%",
-          }}
-        >
-          <Search style={{ color: "#888" }} />
-          <InputBase
-            placeholder="Buscar productos"
-            style={{
-              marginLeft: "10px",
-              flex: 1,
-              fontSize: "14px",
-            }}
-          />
-        </div>
- 
-        {/* Íconos y enlaces */}
-        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-          {isSeller && (
-            <Link
-              href="/admin-dashboard"
-              style={{
-                color: "white",
-                textDecoration: "none",
-                fontWeight: "bold",
-              }}
-            >
-              Tauler de Venedor
-            </Link>
-          )}
-          <IconButton color="inherit">
-            <Badge badgeContent={2} color="error">
-              <ShoppingCart />
-            </Badge>
-          </IconButton>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "15px", marginLeft: "auto" }}>
           {user ? (
-            <Button
-              color="inherit"
-              onClick={handleSignOut}
-              style={{ fontWeight: "bold" }}
-            >
-              Tanca Sessió
-            </Button>
+            <>
+              <Button
+                color="inherit"
+                onClick={handleMenuOpen}
+                style={{ fontWeight: "bold" }}
+              >
+                {user.displayName || user.email}
+              </Button>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+              >
+                <MenuItem onClick={handleProfile}>Perfil</MenuItem>
+                <MenuItem onClick={handleSignOut}>Cerrar Sesión</MenuItem>
+              </Menu>
+            </>
           ) : (
             <Link
               href="/authentication"
@@ -136,5 +78,5 @@ const Navbar = () => {
     </AppBar>
   );
 };
- 
+
 export default Navbar;

@@ -27,14 +27,14 @@ const Home = () => {
   };
 
   return (
-    <Box sx={{ padding: "20px" }}>
+    <Box sx={{ padding: "20px", textAlign: "center" }}>
       <Typography variant="h4" gutterBottom>
         Mis Builds
       </Typography>
       <Button variant="contained" color="primary" onClick={handleCreateBuild} sx={{ marginBottom: "20px" }}>
         Crear Nueva Build
       </Button>
-      <Grid container spacing={3}>
+      <Grid container spacing={3} justifyContent="center">
         {builds.map((build, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
             <Card>

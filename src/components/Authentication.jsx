@@ -1,25 +1,57 @@
 import React, { useState } from "react";
-import { Box, TextField, Button, Typography } from "@mui/material";
+import { Box, TextField, Button, Typography, Alert } from "@mui/material";
+import { auth } from "../firebaseConfig";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 const Authentication = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSignUp = () => {
-    // Lógica para registrarse
+  const handleSignIn = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/");
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
-  const handleSignIn = () => {
-    // Lógica para iniciar sesión
+  const handleSignUp = async () => {
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      navigate("/");
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        {isSignUp ? "Registrarse" : "Iniciar Sesión"}
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: "50px",
+      }}
+    >
+      <Typography variant="h5" gutterBottom>
+        {isSignUp ? "Registro" : "Inicia Sesión"}
       </Typography>
+      {error && (
+        <Alert severity="error" sx={{ marginBottom: "20px" }}>
+          {error}
+        </Alert>
+      )}
       <TextField
         label="Correo Electrónico"
         type="email"
