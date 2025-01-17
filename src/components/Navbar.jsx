@@ -66,7 +66,7 @@ const Navbar = () => {
               fontWeight: "bold",
             }}
           >
-            Mi Tienda
+            Inicio
           </Link>
         </Typography>
  

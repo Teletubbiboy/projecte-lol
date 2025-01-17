@@ -1,14 +1,12 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Banner from "./components/Banner";
-import ProductGrid from "./components/RunesGrid";
 import Footer from "./components/Footer";
-import ProductDetails from "./components/RunesDetails";
-import AdminDashboard from "./components/AdminDashboard";
-import Authentication from "./components/Authentication"; // Importa el component d'autenticació
+import Home from "./components/Home";
+import BuildCreator from "./components/BuildCreator";
+import Authentication from "./components/Authentication";
 import { Box, CssBaseline } from "@mui/material";
- 
+
 const App = () => {
   return (
     <Router>
@@ -16,33 +14,20 @@ const App = () => {
         sx={{
           display: "flex",
           flexDirection: "column",
-          minHeight: "100vh", // Assegura que el Footer sempre quedi al final
+          minHeight: "100vh",
         }}
       >
-        {/* CssBaseline assegura un estil consistent */}
         <CssBaseline />
-        {/* Barra de navegació */}
         <Navbar />
-        {/* Configuració de rutes */}
         <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Banner />
-                <ProductGrid />
-              </>
-            }
-          />
-          <Route path="/product/:id" element={<ProductDetails />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/authentication" element={<Authentication />} /> {/* Ruta afegida */}
+          <Route path="/" element={<Home />} />
+          <Route path="/build-creator" element={<BuildCreator />} />
+          <Route path="/authentication" element={<Authentication />} />
         </Routes>
-        {/* Peu de pàgina */}
         <Footer />
       </Box>
     </Router>
   );
 };
- 
+
 export default App;
